@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="影格相册 TV：面向 Android TV 的飞牛 NAS 相册浏览应用。">
+  <title>影格相册 TV - 飞牛 NAS 大屏相册</title>
+  <style>
+    :root {
+      --ink: #f7f4ea;
+      --muted: #b7c0bd;
+      --night: #080b0c;
+      --panel: #101718;
+      --panel-soft: #172120;
+      --line: #2b3836;
+      --mint: #74dfcf;
+      --amber: #f2b96d;
+      --coral: #e36b5d;
+      --paper: #eee7d7;
+      --shadow: rgba(0, 0, 0, 0.42);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--night);
+      color: var(--ink);
+      font-family: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      line-height: 1.6;
+      letter-spacing: 0;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .site {
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(8, 11, 12, 0.42), #080b0c 86%),
+        linear-gradient(115deg, #111817 0%, #071010 42%, #201712 100%);
+    }
+
+    .hero {
+      position: relative;
+      min-height: 88vh;
+      padding: 32px clamp(22px, 5vw, 72px) 84px;
+      display: grid;
+      align-items: center;
+      isolation: isolate;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: auto -8vw 0 -8vw;
+      height: 26vh;
+      background: linear-gradient(180deg, rgba(116, 223, 207, 0), rgba(116, 223, 207, 0.12));
+      transform: skewY(-3deg);
+      z-index: -2;
+    }
+
+    .topbar {
+      position: absolute;
+      top: 26px;
+      left: clamp(22px, 5vw, 72px);
+      right: clamp(22px, 5vw, 72px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      z-index: 3;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      color: var(--paper);
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.68)),
+        linear-gradient(135deg, #4a83ff, #7f60ff 52%, #74dfcf);
+      box-shadow: inset 0 0 0 7px rgba(255, 255, 255, 0.32);
+      position: relative;
+    }
+
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      left: 9px;
+      right: 9px;
+      bottom: 10px;
+      height: 9px;
+      border-radius: 6px 6px 3px 3px;
+      background: linear-gradient(135deg, #6b8dff, #8a6bff);
+      clip-path: polygon(0 100%, 32% 32%, 51% 62%, 66% 42%, 100% 100%);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav a {
+      text-decoration: none;
+    }
+
+    .nav a:hover,
+    .nav a:focus-visible {
+      color: var(--mint);
+      outline: none;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 2;
+      max-width: 680px;
+      padding-top: 72px;
+    }
+
+    .eyebrow {
+      margin: 0 0 20px;
+      color: var(--mint);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 660px;
+      color: var(--paper);
+      font-size: clamp(48px, 8vw, 108px);
+      line-height: 0.96;
+      font-weight: 900;
+    }
+
+    .hero-lede {
+      max-width: 560px;
+      margin: 26px 0 0;
+      color: #d8ded9;
+      font-size: clamp(18px, 2.1vw, 24px);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 34px;
+    }
+
+    .button {
+      min-height: 48px;
+      padding: 12px 22px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+      font-weight: 800;
+    }
+
+    .button.primary {
+      background: var(--mint);
+      color: #07100f;
+      box-shadow: 0 18px 44px rgba(116, 223, 207, 0.22);
+    }
+
+    .button.secondary {
+      border-color: rgba(238, 231, 215, 0.26);
+      color: var(--paper);
+      background: rgba(8, 11, 12, 0.32);
+    }
+
+    .button:hover,
+    .button:focus-visible {
+      transform: translateY(-1px);
+      outline: 2px solid rgba(242, 185, 109, 0.58);
+      outline-offset: 3px;
+    }
+
+    .tv-scene {
+      position: absolute;
+      right: clamp(-160px, -6vw, -42px);
+      bottom: 34px;
+      width: min(68vw, 980px);
+      min-width: 560px;
+      aspect-ratio: 16 / 9;
+      z-index: 1;
+      transform: perspective(1200px) rotateY(-12deg) rotateX(3deg);
+      filter: drop-shadow(0 48px 70px var(--shadow));
+    }
+
+    .tv-screen {
+      position: absolute;
+      inset: 0;
+      border: 12px solid #171b1a;
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, rgba(9, 13, 13, 0.98), rgba(9, 13, 13, 0.62) 38%, rgba(9, 13, 13, 0.12)),
+        linear-gradient(120deg, #1d2928, #090d0d 56%, #2c1f18);
+      overflow: hidden;
+    }
+
+    .tv-screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.04) 0,
+        rgba(255, 255, 255, 0.04) 1px,
+        transparent 1px,
+        transparent 7px
+      );
+      mix-blend-mode: screen;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .screen-ui {
+      position: absolute;
+      inset: 48px 52px;
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 28px;
+    }
+
+    .rail {
+      border-right: 1px solid rgba(238, 231, 215, 0.14);
+      padding-right: 24px;
+    }
+
+    .rail-title {
+      width: 126px;
+      height: 18px;
+      margin-bottom: 30px;
+      border-radius: 4px;
+      background: var(--paper);
+    }
+
+    .rail-line {
+      height: 12px;
+      margin: 18px 0;
+      border-radius: 4px;
+      background: rgba(238, 231, 215, 0.18);
+    }
+
+    .rail-line.active {
+      width: 116px;
+      background: var(--mint);
+    }
+
+    .photo-area {
+      align-self: end;
+    }
+
+    .date {
+      width: 190px;
+      height: 18px;
+      margin-bottom: 24px;
+      border-radius: 4px;
+      background: rgba(238, 231, 215, 0.76);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(96px, 1fr));
+      gap: 14px;
+    }
+
+    .tile {
+      aspect-ratio: 4 / 3;
+      border-radius: 6px;
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.08), transparent),
+        var(--tile);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tile::after {
+      content: "";
+      position: absolute;
+      left: 14%;
+      right: 12%;
+      bottom: 16%;
+      height: 28%;
+      border-radius: 50% 50% 0 0;
+      background: rgba(255, 255, 255, 0.22);
+      clip-path: polygon(0 100%, 38% 24%, 55% 62%, 70% 36%, 100% 100%);
+    }
+
+    .tile:nth-child(1) { --tile: #435c5d; }
+    .tile:nth-child(2) { --tile: #71543e; }
+    .tile:nth-child(3) { --tile: #526d83; }
+    .tile:nth-child(4) { --tile: #78565b; }
+    .tile:nth-child(5) { --tile: #6f734f; }
+    .tile:nth-child(6) { --tile: #334e45; }
+    .tile:nth-child(7) { --tile: #786847; }
+    .tile:nth-child(8) { --tile: #4b5c7b; }
+
+    .focus-tile {
+      outline: 4px solid var(--mint);
+      outline-offset: 5px;
+      box-shadow: 0 0 0 11px rgba(116, 223, 207, 0.13);
+    }
+
+    .ticker {
+      position: absolute;
+      left: 44px;
+      right: 44px;
+      bottom: 24px;
+      display: flex;
+      gap: 12px;
+      color: rgba(238, 231, 215, 0.64);
+      font-size: 13px;
+    }
+
+    .ticker span {
+      border: 1px solid rgba(238, 231, 215, 0.18);
+      border-radius: 6px;
+      padding: 4px 9px;
+      background: rgba(8, 11, 12, 0.38);
+    }
+
+    .section {
+      padding: 74px clamp(22px, 5vw, 72px);
+    }
+
+    .section.light {
+      background: var(--paper);
+      color: #17201e;
+    }
+
+    .section.dark {
+      background: #0c1112;
+    }
+
+    .section-heading {
+      max-width: 760px;
+      margin: 0 0 36px;
+    }
+
+    .section-heading p {
+      margin: 10px 0 0;
+      color: inherit;
+      opacity: 0.72;
+      font-size: 18px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 52px);
+      line-height: 1.08;
+    }
+
+    .feature-list {
+      max-width: 1080px;
+      border-top: 1px solid var(--line);
+    }
+
+    .section.light .feature-list {
+      border-top-color: rgba(23, 32, 30, 0.18);
+    }
+
+    .feature {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 28px;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section.light .feature {
+      border-bottom-color: rgba(23, 32, 30, 0.18);
+    }
+
+    .feature strong {
+      font-size: 19px;
+      color: var(--mint);
+    }
+
+    .section.light .feature strong {
+      color: #116c60;
+    }
+
+    .feature p {
+      margin: 0;
+      color: inherit;
+      opacity: 0.75;
+      font-size: 17px;
+    }
+
+    .download-panel {
+      max-width: 1080px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+      align-items: center;
+      border: 1px solid rgba(116, 223, 207, 0.26);
+      border-radius: 8px;
+      padding: clamp(24px, 4vw, 42px);
+      background:
+        linear-gradient(135deg, rgba(116, 223, 207, 0.12), rgba(242, 185, 109, 0.08)),
+        var(--panel);
+    }
+
+    .download-panel p {
+      margin: 14px 0 0;
+      color: var(--muted);
+    }
+
+    .release-box {
+      border-left: 1px solid rgba(238, 231, 215, 0.18);
+      padding-left: 28px;
+    }
+
+    .release-name {
+      display: block;
+      color: var(--paper);
+      font-weight: 800;
+      word-break: break-all;
+    }
+
+    .release-note {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .risk {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      max-width: 1080px;
+    }
+
+    .risk-item {
+      min-height: 220px;
+      border: 1px solid rgba(23, 32, 30, 0.18);
+      border-radius: 8px;
+      padding: 22px;
+      background: rgba(255, 255, 255, 0.44);
+    }
+
+    .risk-item h3 {
+      margin: 0 0 12px;
+      font-size: 21px;
+    }
+
+    .risk-item p {
+      margin: 0;
+      color: rgba(23, 32, 30, 0.74);
+    }
+
+    footer {
+      padding: 34px clamp(22px, 5vw, 72px);
+      color: rgba(238, 231, 215, 0.52);
+      border-top: 1px solid rgba(238, 231, 215, 0.12);
+      background: #070909;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        min-height: 92vh;
+        padding-bottom: 320px;
+      }
+
+      .nav {
+        display: none;
+      }
+
+      .tv-scene {
+        width: 720px;
+        min-width: 720px;
+        right: -320px;
+        bottom: 28px;
+        opacity: 0.62;
+      }
+
+      .screen-ui {
+        grid-template-columns: 130px 1fr;
+        inset: 36px;
+      }
+
+      .grid {
+        grid-template-columns: repeat(3, minmax(82px, 1fr));
+      }
+
+      .feature,
+      .download-panel,
+      .risk {
+        grid-template-columns: 1fr;
+      }
+
+      .release-box {
+        border-left: 0;
+        border-top: 1px solid rgba(238, 231, 215, 0.18);
+        padding-left: 0;
+        padding-top: 24px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .hero {
+        padding-top: 86px;
+        padding-bottom: 260px;
+      }
+
+      .topbar {
+        top: 20px;
+      }
+
+      .actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .tv-scene {
+        width: 560px;
+        min-width: 560px;
+        right: -290px;
+        bottom: 28px;
+      }
+
+      .screen-ui {
+        inset: 28px;
+        grid-template-columns: 96px 1fr;
+        gap: 18px;
+      }
+
+      .rail {
+        padding-right: 14px;
+      }
+
+      .grid {
+        gap: 10px;
+      }
+
+      .ticker {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .focus-tile {
+        animation: breathe 2.8s ease-in-out infinite;
+      }
+
+      @keyframes breathe {
+        0%, 100% {
+          outline-offset: 5px;
+        }
+        50% {
+          outline-offset: 8px;
+        }
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="site">
+    <section class="hero" aria-labelledby="hero-title">
+      <header class="topbar">
+        <div class="brand" aria-label="影格相册 TV">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>影格相册 TV</span>
+        </div>
+        <nav class="nav" aria-label="页面导航">
+          <a href="#features">功能</a>
+          <a href="#download">下载</a>
+          <a href="#notice">风险提示</a>
+        </nav>
+      </header>
+
+      <div class="hero-copy">
+        <p class="eyebrow">飞牛 NAS 相册，回到客厅大屏</p>
+        <h1 id="hero-title">影格相册 TV</h1>
+        <p class="hero-lede">用电视遥控器浏览 NAS 里的照片和视频。时间线、人物、地点、智能分类、文件夹、相册和全屏播放，为 Android TV 重新整理成适合沙发距离的体验。</p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/cumtfc/yingge-album-tv/releases/tag/v1.0.3">下载通用包</a>
+          <a class="button secondary" href="https://github.com/cumtfc/yingge-album-tv/releases/tag/v1.0.3">下载 32 位 ARM 包</a>
+          <a class="button secondary" href="#notice">阅读风险提示</a>
+        </div>
+      </div>
+
+      <div class="tv-scene" aria-hidden="true">
+        <div class="tv-screen">
+          <div class="screen-ui">
+            <div class="rail">
+              <div class="rail-title"></div>
+              <div class="rail-line active"></div>
+              <div class="rail-line" style="width: 92px"></div>
+              <div class="rail-line" style="width: 126px"></div>
+              <div class="rail-line" style="width: 74px"></div>
+            </div>
+            <div class="photo-area">
+              <div class="date"></div>
+              <div class="grid">
+                <div class="tile"></div>
+                <div class="tile focus-tile"></div>
+                <div class="tile"></div>
+                <div class="tile"></div>
+                <div class="tile"></div>
+                <div class="tile"></div>
+                <div class="tile"></div>
+                <div class="tile"></div>
+              </div>
+            </div>
+          </div>
+          <div class="ticker">
+            <span>局域网服务器</span>
+            <span>时间线</span>
+            <span>人物</span>
+            <span>地点</span>
+            <span>智能分类</span>
+            <span>文件夹</span>
+            <span>相册</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark" id="features">
+      <div class="section-heading">
+        <h2>把相册操作做成电视该有的样子</h2>
+        <p>不是把手机页面放大，而是围绕遥控器、沙发距离和家庭照片回看重新组织。</p>
+      </div>
+      <div class="feature-list">
+        <div class="feature">
+          <strong>遥控器优先</strong>
+          <p>焦点、左右切换、返回和全屏浏览都面向电视操作，减少输入和复杂层级。</p>
+        </div>
+        <div class="feature">
+          <strong>照片和视频</strong>
+          <p>支持浏览照片、播放视频，并在详情页保留沉浸式观看体验。</p>
+        </div>
+        <div class="feature">
+          <strong>时间线 / 文件夹 / 相册</strong>
+          <p>按日期回看，也可以从已管理文件夹或用户相册进入，更贴近 NAS 中的整理方式。</p>
+        </div>
+        <div class="feature">
+          <strong>人物 / 地点 / 智能分类</strong>
+          <p>支持从人物、地点和智能分类入口浏览照片集合。分类结果依赖 NAS 相册服务已经完成的人脸、位置和内容识别。</p>
+        </div>
+        <div class="feature">
+          <strong>灵活连接 NAS</strong>
+          <p>支持局域网自动发现，也可以手动输入 IP、域名或其他可访问的服务器地址。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark" id="download">
+      <div class="download-panel">
+        <div>
+          <h2>下载发布包</h2>
+          <p>下载 APK 后，可通过 U 盘、ADB 或电视自带的安装器安装到 Android TV。大多数设备请选择通用包；确认是 32 位 ARM 设备时，可选择体积更小的 armeabi-v7a 包。</p>
+          <div class="actions">
+            <a class="button primary" href="https://github.com/cumtfc/yingge-album-tv/releases/tag/v1.0.3">下载通用包</a>
+            <a class="button secondary" href="https://github.com/cumtfc/yingge-album-tv/releases/tag/v1.0.3">下载 32 位 ARM 包</a>
+          </div>
+        </div>
+        <div class="release-box">
+          <span class="release-name">yingge-album-tv-v1.0.3-universal.apk</span>
+          <span class="release-note">通用包，适合不确定设备 ABI 或希望兼容更多电视盒子的用户。</span>
+          <span class="release-name">yingge-album-tv-v1.0.3-armeabi-v7a.apk</span>
+          <span class="release-note">32 位 ARM 单 ABI 包，适合 armeabi-v7a 设备，体积更小。</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section light" id="notice">
+      <div class="section-heading">
+        <h2>使用前请确认这些风险</h2>
+        <p>它连接的是你的私有 NAS 和照片数据，所以安全边界需要由你自己掌握。</p>
+      </div>
+      <div class="risk">
+        <article class="risk-item">
+          <h3>账号与隐私</h3>
+          <p>请自行保护 NAS 地址、账号、密码、访问令牌和电视设备安全。共享设备、弱密码、不可信网络或第三方操作可能带来隐私风险。</p>
+        </article>
+        <article class="risk-item">
+          <h3>公网数据安全</h3>
+          <p>公网 IP、域名、端口转发、反向代理、内网穿透或 FN Connect 等远程访问方式都需要自行评估证书、链路和访问控制风险。</p>
+        </article>
+        <article class="risk-item">
+          <h3>NAS 数据与维护</h3>
+          <p>接口变更、服务异常、网络中断、权限配置或系统差异可能导致功能失效，甚至间接影响 NAS 数据或索引状态。本应用不承诺永久维护。</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    本应用为非官方兼容应用。“飞牛”“fnOS”“FN Connect”等名称仅用于说明兼容对象或连接方式，相关名称、标识和商标权利归其权利人所有。
+  </footer>
+</body>
+</html>
