@@ -2,6 +2,8 @@
 
 影格相册 TV 是一款面向 Android TV 的飞牛 NAS 相册浏览应用，用电视遥控器就能浏览 NAS 中的照片、视频、文件夹和相册。
 
+源码：[cumtfc/yingge-album-tv-android](https://github.com/cumtfc/yingge-album-tv-android)，采用 `AGPL-3.0-only` 许可证。
+
 ## 功能亮点
 
 - 大屏相册浏览：为电视横屏和遥控器操作优化。
